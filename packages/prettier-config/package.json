@@ -1,0 +1,26 @@
+{
+  "name": "@cloudwalk/solidity-prettier-config",
+  "version": "0.0.1",
+  "description": "Configuration for prettier for Solidity",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {
+    "prettier-plugin-solidity": "^2.1.0"
+  },
+  "peerDependencies": {
+    "prettier": "^3.6.2"
+  },
+  "keywords": [
+    "prettier",
+    "solidity"
+  ],
+  "author": "Cloudwalk Inc.",
+  "files": [
+    "index.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cloudwalk/brlc-dev-ex.git"
+  }
+}
