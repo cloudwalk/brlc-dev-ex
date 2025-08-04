@@ -2,6 +2,9 @@ name: test-pr
 
 on:
   workflow_call:
+    secrets:
+      GHA_PAT:
+        required: true
 jobs:
   build:
     strategy:

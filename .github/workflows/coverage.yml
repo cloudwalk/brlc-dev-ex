@@ -5,6 +5,8 @@ on:
     secrets:
       CODECOV_TOKEN:
         required: true
+      GHA_PAT:
+        required: true
 
 permissions:
   contents: read
