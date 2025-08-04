@@ -1,6 +1,6 @@
 {
   "name": "@cloudwalk/eslint-config-smart-contracts",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Configuration for ESLint from Smart-contracts team",
   "type": "module",
   "main": "index.js",
