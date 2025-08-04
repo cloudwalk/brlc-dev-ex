@@ -9,9 +9,9 @@ This repository contains utilities for smart contracts development
 ## Dev enviroment setup
 1. Generate an NPM registry token with `read:packages` permission [here](https://github.com/settings/tokens).
 1. Add token to your global `.npmrc` file for github npm registry [file reference](https://docs.npmjs.com/cli/v11/configuring-npm/npmrc):
-```
-# .npmrc
-//npm.pkg.github.com/:_authToken=ghp_************
-```
+    ```
+    //npm.pkg.github.com/:_authToken=ghp_************
+    ```
     Linux/MacOS: `~/.npmrc`
+    
     Windows: `%USERPROFILE%\.npmrc`
