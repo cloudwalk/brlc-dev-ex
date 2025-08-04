@@ -41,7 +41,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GHA_PAT }}
 
-      - run: npx hardhat compile
+      - run: npm run build
 
       - run: npm run test
 
