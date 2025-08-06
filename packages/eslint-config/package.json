@@ -1,16 +1,23 @@
 {
   "name": "@cloudwalk/eslint-config-smart-contracts",
-  "version": "1.0.0",
+  "version": "0.0.1-alpha.1",
   "description": "Configuration for ESLint from Smart-contracts team",
-  "type": "module",
-  "main": "index.js",
-  "scripts": {},
+  "type": "commonjs",
+  "main": "eslint.config.js",
+  "scripts": {
+    "eslint": "eslint ."
+  },
   "dependencies": {
     "@stylistic/eslint-plugin": "^5.2.2",
+    "eslint-plugin-promise": "^7.2.1",
+    "globals": "^16.3.0",
     "typescript-eslint": "^8.38.0"
   },
+  "devDependencies": {
+    "eslint": "^9.32.0"
+  },
   "peerDependencies": {
-    "@eslint/js": "^9.32.0",
+    "eslint": "^9.32.0",
     "typescript": "^5.8.3"
   },
   "keywords": [
