@@ -2,7 +2,7 @@
   "name": "@cloudwalk/solidity-prettier-config",
   "version": "1.0.0",
   "description": "Configuration for prettier for Solidity",
-  "type": "module",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {},
   "dependencies": {
