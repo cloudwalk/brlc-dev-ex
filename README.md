@@ -12,6 +12,7 @@ To use GitHub NPM packages, developers need to authenticate their npm client wit
 For detailed instructions, see the [GitHub documentation on authenticating with a personal access token](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-with-a-personal-access-token).
 
 tldr:
+Get token [here](https://github.com/settings/tokens) then run command:
 ```bash
 npm login --scope=@cloudwalk --auth-type=legacy --registry=https://npm.pkg.github.com
 
