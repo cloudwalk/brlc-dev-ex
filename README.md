@@ -1,4 +1,5 @@
 # brlc-dev-ex
+![brlc-cover](./docs/media/brlc-cover.png)
 This repository contains utilities for smart contracts development
 
 ## Content
@@ -14,7 +15,9 @@ For step-by-step instructions, refer to the [GitHub documentation on authenticat
 
 **Quick Start:**
 
-1. Generate a personal access token [here](https://github.com/settings/tokens).
+1. Generate a personal access token [here](https://github.com/settings/tokens). We need to choose `Personal access tokens (classic)` with `read:packages` permission.
+![Token Generation Example](docs/media/token.png)
+
 2. Run the following command in your terminal:
 ```bash
 $ npm login --scope=@cloudwalk --auth-type=legacy --registry=https://npm.pkg.github.com
