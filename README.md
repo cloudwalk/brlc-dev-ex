@@ -6,12 +6,15 @@ This repository contains utilities for smart contracts development
 1. Prettier configuration
 1. Eslint configuration
 
-## Dev enviroment setup
-1. Generate an NPM registry token with `read:packages` permission [here](https://github.com/settings/tokens).
-1. Add token to your global `.npmrc` file for github npm registry [file reference](https://docs.npmjs.com/cli/v11/configuring-npm/npmrc):
-    ```
-    //npm.pkg.github.com/:_authToken=ghp_************
-    ```
-    Linux/MacOS: `~/.npmrc`
-    
-    Windows: `%USERPROFILE%\.npmrc`
+## Using NPM Packages
+
+To use GitHub NPM packages, developers need to authenticate their npm client with the GitHub npm registry.  
+For detailed instructions, see the [GitHub documentation on authenticating with a personal access token](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-with-a-personal-access-token).
+
+tldr:
+```bash
+npm login --scope=@cloudwalk --auth-type=legacy --registry=https://npm.pkg.github.com
+
+> Username: USERNAME
+> Password: TOKEN
+```
