@@ -1,0 +1,17 @@
+name: "coverage-to-codecov"
+description: "Run tests, collect coverage, upload to Codecov"
+inputs:
+  CODECOV_TOKEN:
+    description: "Codecov upload token"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run tests with coverage
+      run: npx hardhat coverage
+
+    - name: Upload results to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ inputs.CODECOV_TOKEN }}

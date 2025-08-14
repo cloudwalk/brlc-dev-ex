@@ -45,14 +45,14 @@ jobs:
 
       - run: npm run build
 
-      - run: npm run test
-
       - run: npm run prettier:check
 
       - run: npm run eslint:check
 
-      - name: run coverage workflow
-        uses: ./coverage.yml
+      - run: npm run test
+
+      - name: run coverage action
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/coverage
         with:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-          GHA_PAT: ${{ secrets.GHA_PAT }}
