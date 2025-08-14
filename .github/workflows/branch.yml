@@ -3,6 +3,8 @@ name: test-pr
 on:
   workflow_call:
     secrets:
+      CODECOV_TOKEN:
+        required: true
       GHA_PAT:
         required: true
 jobs:
