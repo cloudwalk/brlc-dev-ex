@@ -49,4 +49,8 @@ jobs:
 
       - run: npm run eslint:check
 
-# TODO: maybe split this into two workflows: one for PRs and one for main branch
+      - name: run coverage workflow
+        uses: ./coverage.yml
+        with:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          GHA_PAT: ${{ secrets.GHA_PAT }}
