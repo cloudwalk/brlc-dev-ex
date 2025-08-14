@@ -10,6 +10,7 @@ runs:
   steps:
     - name: Run tests with coverage
       run: npx hardhat coverage
+      shell: bash
 
     - name: Upload results to Codecov
       uses: codecov/codecov-action@v5

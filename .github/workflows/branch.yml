@@ -53,6 +53,6 @@ jobs:
 
       - name: run coverage action
         if: runner.os == 'Linux'
-        uses: ./.github/actions/coverage
+        uses: cloudwalk/brlc-dev-ex/.github/actions/coverage@main
         with:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
