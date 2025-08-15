@@ -7,7 +7,7 @@ This repository contains utilities for smart contracts development
 1. Prettier configuration
 1. Eslint configuration
 
-## Using NPM Packages
+## Using internal NPM Packages
 
 To use GitHub NPM packages, you need to authenticate your npm client with the GitHub npm registry. This only needs to be done once.
 
@@ -25,3 +25,4 @@ $ npm login --scope=@cloudwalk --auth-type=legacy --registry=https://npm.pkg.git
 > Username: USERNAME
 > Password: TOKEN
 ```
+3. Authorize the new token with Cloudwalk SSO
