@@ -23,7 +23,7 @@
 
 ```sh
 # Install all dependencies
-npm i
+npm ci
 
 # Compile all contracts
 npm run build
