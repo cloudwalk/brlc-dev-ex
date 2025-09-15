@@ -45,7 +45,7 @@ const knownConstants = {
 export function stringifyValue(value: unknown): string {
   if (typeof value === "string") {
     const resolvedKnownConstant = knownConstants[value.toLowerCase() as keyof typeof knownConstants];
-    return resolvedKnownConstant ?? limitStringLength(value, 10);
+    return resolvedKnownConstant ?? limitStringLength(value, 20);
   };
 
   if (typeof value === "bigint")  {
