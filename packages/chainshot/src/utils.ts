@@ -1,4 +1,5 @@
 import { Addressable } from "ethers";
+import { ScenarioLogRecord } from "./Scenario.js";
 
 
 function limitStringLength(str: string, limit: number): string {
@@ -41,6 +42,15 @@ const knownConstants = {
   "0x0000000000000000000000000000000000000000000000000000000000000000": "ZERO",
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff": "MAX_UINT256",
 } as const;
+
+export function strigifyLogArgumentsVerbose(log: ScenarioLogRecord): string {
+  const result: Record<string, string> = {};
+    for (let i = 0; i < log.methodFragment.inputs.length; i++) {
+      const arg = log.methodFragment.inputs[i];
+      result[stringifyValue(arg.name)] = stringifyValue(log.args[i]);
+    }
+  return JSON.stringify(result, null, 2);
+}
 
 export function stringifyValue(value: unknown): string {
   if (typeof value === "string") {

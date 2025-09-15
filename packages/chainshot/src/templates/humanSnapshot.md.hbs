@@ -16,11 +16,11 @@
 
 {{#each logs}}
 <details>
-<summary>Step {{@index}}: {{contract}}.{{name}}</summary>
+<summary>Step {{@index}}: {{contract}}.{{methodFragment.name}}</summary>
 
 - **type**: {{type}}
 - **caller**: {{caller}}
-- **args**: `{{stringify-inline args}}`
+- **args**: `{{{strigifyLogArgumentsVerbose this}}}`
 
 **Events**
 

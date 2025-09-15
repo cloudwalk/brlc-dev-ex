@@ -2,7 +2,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import type { Scenario } from "./Scenario.js";
 import Handlebars from "handlebars";
-import { stringifyValue } from "./utils.js";
+import { strigifyLogArgumentsVerbose, stringifyValue } from "./utils.js";
 import { renderSequenceDiagram } from "./sequenceDiagram.js";
 
 async function getFileName(testFile: string) {
@@ -13,6 +13,7 @@ async function getFileName(testFile: string) {
 }
 
 Handlebars.registerHelper("stringify-inline", stringifyValue);
+Handlebars.registerHelper("strigifyLogArgumentsVerbose", strigifyLogArgumentsVerbose);
 Handlebars.registerHelper("mermaid", renderSequenceDiagram);
 Handlebars.registerHelper("inc", function (value: string) {
   return parseInt(value) + 1;

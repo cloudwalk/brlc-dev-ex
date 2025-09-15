@@ -1,12 +1,12 @@
 
 import { ethers } from "hardhat";
-import type { BaseContract, Log, TransactionReceipt } from "ethers";
+import type { BaseContract, Log, TransactionReceipt, FunctionFragment } from "ethers";
 import { getBigInt } from "ethers";
 import { normalizeAddress, revertMap } from "./utils.js";
 
 interface TxRecord {
   txHash: string;
-  method: string;
+  methodFragment: FunctionFragment;
   contract: string;
   caller: string;
   args: unknown[];
@@ -25,11 +25,11 @@ interface ScenarioEventRecord {
   args: unknown[];
 }
 
-interface ScenarioLogRecord {
+export interface ScenarioLogRecord {
   type: "methodCall" | "initialState";
+  methodFragment: FunctionFragment;
   caller: string;
   contract: string;
-  name: string;
   args: unknown[];
   balances: Record<string, Record<string, bigint>>;
   events: ScenarioEventRecord[];
@@ -175,7 +175,7 @@ export class Scenario {
       }
       this.logs.push({
         type: "methodCall",
-        name: methodCalled.method,
+        methodFragment: methodCalled.methodFragment,
         args: methodCalled.args,
         caller: methodCalled.caller,
         contract: methodCalled.contract,
@@ -214,11 +214,14 @@ export class Scenario {
     const contract = this.resolveAddress(data.to);
     const contractInstance: BaseContract | undefined = this.config.contracts[contract];
     const parsedData = contractInstance?.interface.parseTransaction({ data: data.data });
-    const method = parsedData?.name;
+    const methodFragment = parsedData?.fragment as FunctionFragment;
+    if (!methodFragment) {
+      throw new Error("Failed to parse method fragment");
+    }
     const args = parsedData?.args;
     this.transactionsQueue.push({
       txHash,
-      method: method || "failed to parse method",
+      methodFragment: methodFragment,
       contract,
       caller,
       args: args ? this.resolveAddressDeep(args) : [],

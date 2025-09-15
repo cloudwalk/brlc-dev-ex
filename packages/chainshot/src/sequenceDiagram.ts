@@ -54,7 +54,7 @@ export function renderSequenceDiagram(scenario: Scenario): string {
   scenario.logs.forEach((log) => {
     const caller = sanitizeMermaidLabel(String(log.caller));
     const contract = sanitizeMermaidLabel(String(log.contract));
-    const title = `${caller} calls ${contract}.${sanitizeMermaidLabel(String(log.name))}`;
+    const title = `${caller} calls ${contract}.${sanitizeMermaidLabel(String(log.methodFragment?.name))}`;
     // Green action box with token arrows inside
     lines.push("  rect rgb(230,255,230)");
     // lines.push(`    Note over ${caller},${contract}: ${title}`);
