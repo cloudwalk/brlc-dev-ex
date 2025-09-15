@@ -1,6 +1,6 @@
 {
   "name": "@cloudwalk/chainshot",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
@@ -29,8 +29,8 @@
     "typescript": "^5.9.2"
   },
   "peerDependencies": {
-    "@nomicfoundation/hardhat-toolbox": ">5.0.0",
-    "@nomicfoundation/hardhat-ethers": ">3.0.0"
+    "@nomicfoundation/hardhat-toolbox": ">=5.0.0",
+    "@nomicfoundation/hardhat-ethers": ">=3.0.0"
   },
   "dependencies": {
     "handlebars": "^4.7.8",
