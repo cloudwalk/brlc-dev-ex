@@ -1,6 +1,7 @@
 import "@nomicfoundation/hardhat-toolbox";
 
 import type { HardhatRuntimeEnvironment } from "hardhat/types";
+import { beforeEach, afterEach, before, after } from "mocha";
 import { expect, assert, use as chaiUse } from "chai";
 import { Scenario, ScenarioConfig } from "./Scenario.js";
 import { jestSnapshotPlugin } from "mocha-chai-jest-snapshot";
@@ -24,7 +25,7 @@ const chainShotChaiPlugin = (hre: HardhatRuntimeEnvironment): ChaiPlugin => {
       return; // scenariosCache.get(runnable.id) as Scenario;
     }
     const scenario: Scenario = new Scenario (
-      hre,
+      hre, 
       {
         test: currentTest,
         config,
@@ -57,6 +58,11 @@ const chainShotChaiPlugin = (hre: HardhatRuntimeEnvironment): ChaiPlugin => {
   }
 
   return function (chai) {
+    global.beforeEach = beforeEach;
+    global.afterEach = afterEach;
+    global.before = before;
+    global.after = after;
+
     chaiUse(jestSnapshotPlugin());
 
     beforeEach(function (this: Mocha.Context) {
