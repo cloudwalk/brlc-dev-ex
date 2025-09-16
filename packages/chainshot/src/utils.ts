@@ -1,7 +1,6 @@
 import { Addressable } from "ethers";
 import { ScenarioLogRecord } from "./Scenario.js";
 
-
 function limitStringLength(str: string, limit: number): string {
   if (str.length <= limit) return str;
   const halfLimit = Math.floor(limit / 2);
@@ -45,10 +44,10 @@ const knownConstants = {
 
 export function strigifyLogArgumentsVerbose(log: ScenarioLogRecord): string {
   const result: Record<string, string> = {};
-    for (let i = 0; i < log.methodFragment.inputs.length; i++) {
-      const arg = log.methodFragment.inputs[i];
-      result[stringifyValue(arg.name)] = stringifyValue(log.args[i]);
-    }
+  for (let i = 0; i < log.methodFragment.inputs.length; i++) {
+    const arg = log.methodFragment.inputs[i];
+    result[stringifyValue(arg.name)] = stringifyValue(log.args[i]);
+  }
   return JSON.stringify(result, null, 2);
 }
 
@@ -58,7 +57,7 @@ export function stringifyValue(value: unknown): string {
     return resolvedKnownConstant ?? limitStringLength(value, 20);
   };
 
-  if (typeof value === "bigint")  {
+  if (typeof value === "bigint") {
     return stringifyValue(value.toString());
   };
 

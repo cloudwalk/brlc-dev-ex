@@ -56,6 +56,7 @@ const chainShotPlugin = (): ChaiPlugin => {
 
   return function (chai) {
     chaiUse(jestSnapshotPlugin());
+
     beforeEach(function (this: Mocha.Context) {
       if (this.currentTest) {
         currentTest = this.currentTest;
@@ -88,6 +89,7 @@ export {
 
 /* eslint-disable @typescript-eslint/no-namespace */
 declare global {
+  var scenario: (name: string, cb: () => Promise<void>) => void;
   namespace Chai {
     interface ExpectStatic {
       startScenario(
