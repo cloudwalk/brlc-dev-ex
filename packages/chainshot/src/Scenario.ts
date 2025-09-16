@@ -1,8 +1,9 @@
-import { ethers } from "hardhat";
+import { type HardhatRuntimeEnvironment } from "hardhat/types";
 import type { BaseContract, Log, TransactionReceipt, FunctionFragment } from "ethers";
 import { getBigInt } from "ethers";
 import { normalizeAddress, revertMap } from "./utils.js";
 
+type HREProvider = HardhatRuntimeEnvironment["ethers"]["provider"];
 interface TxRecord {
   txHash: string;
   methodFragment: FunctionFragment;
@@ -40,22 +41,25 @@ export const ScenarioLogsSymbol = Symbol("ScenarioLogs");
 export class Scenario {
   public test: Mocha.Test;
   public name: string;
+  public config: ScenarioConfig;
+  public logs: ScenarioLogs = [] as ScenarioLogs;
+
   private addressToContract: Record<string, string>;
   private addressToToken: Record<string, string>;
   private addressToAccount: Record<string, string>;
-  public config: ScenarioConfig;
-  private originalSend: typeof ethers.provider.send = ethers.provider.send.bind(ethers.provider);
-  public logs: ScenarioLogs = [] as ScenarioLogs;
+  private originalSend: HREProvider["send"];
   private transactionsQueue: TxRecord[] = [];
   private decimalsCache: Record<string, number> = {};
 
   constructor(
+    private hre: HardhatRuntimeEnvironment,
     public options: {
       test: Mocha.Test;
       config: ScenarioConfig;
       name?: string;
     },
   ) {
+    this.originalSend = this.hre.ethers.provider.send.bind(this.hre.ethers.provider);
     this.config = options.config;
     this.test = options.test;
     this.addressToContract = revertMap(this.config.contracts, contract => normalizeAddress(contract.target));
@@ -76,7 +80,7 @@ export class Scenario {
     return titlesStack.filter(title => !!title).reverse().join(" > ");
   }
 
-  injectIntoProvider(provider: typeof ethers.provider) {
+  injectIntoProvider(provider: HREProvider) {
     this.originalSend = provider.send.bind(provider);
     provider.send = async (...args) => {
       if (args[0] === "eth_sendTransaction" && args[1] !== undefined && args[1][0] !== undefined) {
@@ -89,7 +93,7 @@ export class Scenario {
     };
   }
 
-  restoreProvider(provider: typeof ethers.provider) {
+  restoreProvider(provider: HREProvider) {
     provider.send = this.originalSend;
   }
 
@@ -125,7 +129,7 @@ export class Scenario {
     if (this.decimalsCache[tokenContract.target as string]) {
       return this.decimalsCache[tokenContract.target as string];
     }
-    const decimals = (await ethers.provider.call({
+    const decimals = (await this.hre.ethers.provider.call({
       to: tokenContract.target,
       data: tokenContract.interface.encodeFunctionData("decimals"),
     })) as unknown as number;
@@ -145,13 +149,13 @@ export class Scenario {
     for (const [name, tokenContract] of Object.entries(this.config.tokens)) {
       const tokenBalances: Record<string, bigint> = {};
 
-      async function getBalanceForToken(accountAddress: string) {
-        return getBigInt(await ethers.provider.call({
+      const getBalanceForToken = async (accountAddress: string) => {
+        return getBigInt(await this.hre.ethers.provider.call({
           to: tokenContract.target,
           data: tokenContract.interface.encodeFunctionData("balanceOf", [accountAddress]),
           blockTag: blockHash,
         }));
-      }
+      };
 
       for (const [accountName, accountAddress] of Object.entries(this.getAllBalanceHolders())) {
         const balance = await getBalanceForToken(accountAddress);
@@ -165,7 +169,7 @@ export class Scenario {
 
   async processTxs() {
     for (const methodCalled of this.transactionsQueue) {
-      const txReceipt = await ethers.provider.getTransactionReceipt(methodCalled.txHash);
+      const txReceipt = await this.hre.ethers.provider.getTransactionReceipt(methodCalled.txHash);
       if (txReceipt === null) {
         // TODO maybe log it with fail status??
         console.warn("Transaction receipt is null", methodCalled);

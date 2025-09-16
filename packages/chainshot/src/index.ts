@@ -1,6 +1,6 @@
 import "@nomicfoundation/hardhat-toolbox";
 
-import { network, ethers } from "hardhat";
+import type { HardhatRuntimeEnvironment } from "hardhat/types";
 import { expect, assert, use as chaiUse } from "chai";
 import { Scenario, ScenarioConfig } from "./Scenario.js";
 import { jestSnapshotPlugin } from "mocha-chai-jest-snapshot";
@@ -9,7 +9,7 @@ import { dumpScenariosToHumans } from "./scenarioLogs2Humans.js";
 type FirstFunctionArgument<T> = T extends (arg: infer A) => unknown ? A : never;
 type ChaiPlugin = FirstFunctionArgument<typeof chaiUse>;
 
-const chainShotChaiPlugin = (): ChaiPlugin => {
+const chainShotChaiPlugin = (hre: HardhatRuntimeEnvironment): ChaiPlugin => {
   // expect.addSnapshotSerializer(CSVSerializer);
   let currentTest: Mocha.Test | undefined;
 
@@ -23,13 +23,15 @@ const chainShotChaiPlugin = (): ChaiPlugin => {
     if (scenariosCache.has(currentTest.id)) {
       return; // scenariosCache.get(runnable.id) as Scenario;
     }
-    const scenario: Scenario = new Scenario ({
-      test: currentTest,
-      config,
-      name: config.name,
-    });
+    const scenario: Scenario = new Scenario (
+      hre,
+      {
+        test: currentTest,
+        config,
+        name: config.name,
+      });
 
-    scenario.injectIntoProvider(ethers.provider);
+    scenario.injectIntoProvider(hre.ethers.provider);
 
     scenariosCache.set(currentTest.id, scenario);
     // return scenario;
@@ -43,7 +45,7 @@ const chainShotChaiPlugin = (): ChaiPlugin => {
     if (scenario === undefined) {
       throw new Error("Scenario have to be started in a test");
     }
-    scenario.restoreProvider(ethers.provider);
+    scenario.restoreProvider(hre.ethers.provider);
     await scenario.processTxs();
 
     // scenario.printLogs();
@@ -70,7 +72,7 @@ const chainShotChaiPlugin = (): ChaiPlugin => {
         await dumpScenariosToHumans(testFile, scenarios);
       }
     });
-    if (network.name === "hardhat") {
+    if (hre.network.name === "hardhat") {
       // only for hardhat network rn
       chai.expect.startScenario = startScenario;
       chai.expect.endScenario = endScenario;
@@ -83,8 +85,8 @@ const chainShotChaiPlugin = (): ChaiPlugin => {
   };
 };
 
-const chainShotHardhatPlugin = () => {
-  chaiUse(chainShotChaiPlugin());
+const chainShotHardhatPlugin = (hre: HardhatRuntimeEnvironment) => {
+  chaiUse(chainShotChaiPlugin(hre));
 };
 
 export {
