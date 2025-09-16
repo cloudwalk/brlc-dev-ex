@@ -7,7 +7,7 @@
 | Idx | Caller | Contract | Name | Args |
 | --- | ------ | -------- | ---- | ---- |
 {{#each logs}}
-| {{inc @index}} | {{caller}} | {{contract}} | {{name}} | {{stringify-inline args}} |
+| {{inc @index}} | {{caller}} | {{contract}} | {{methodFragment.name}} | {{stringify-inline args}} |
 {{/each}}
 
 ```mermaid
