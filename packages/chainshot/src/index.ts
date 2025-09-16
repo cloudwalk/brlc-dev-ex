@@ -9,7 +9,7 @@ import { dumpScenariosToHumans } from "./scenarioLogs2Humans.js";
 type FirstFunctionArgument<T> = T extends (arg: infer A) => unknown ? A : never;
 type ChaiPlugin = FirstFunctionArgument<typeof chaiUse>;
 
-const chainShotPlugin = (): ChaiPlugin => {
+const chainShotChaiPlugin = (): ChaiPlugin => {
   // expect.addSnapshotSerializer(CSVSerializer);
   let currentTest: Mocha.Test | undefined;
 
@@ -83,8 +83,13 @@ const chainShotPlugin = (): ChaiPlugin => {
   };
 };
 
+const chainShotHardhatPlugin = () => {
+  chaiUse(chainShotChaiPlugin());
+};
+
 export {
-  chainShotPlugin,
+  chainShotChaiPlugin,
+  chainShotHardhatPlugin,
 };
 
 /* eslint-disable @typescript-eslint/no-namespace */
