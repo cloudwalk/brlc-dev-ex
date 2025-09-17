@@ -11,8 +11,8 @@
   },
   "devDependencies": {
     "@cloudwalk/eslint-config-smart-contracts": "^1.0.0",
-    "@nomicfoundation/hardhat-ethers": "^3.0.0",
-    "hardhat": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^4.0.1",
+    "hardhat": "^3.0.6",
     "@types/mocha": "^10.0.0",
     "@types/chai": "^4.0.0",
     "@types/node": "^22.0.0",
