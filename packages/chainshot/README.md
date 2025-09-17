@@ -10,7 +10,7 @@ Chai plugin for Hardhat tests that records on-chain scenarios: every method call
 ```bash
 npm i -D @cloudwalk/chainshot
 # peer deps you likely already have in a Hardhat project
-npm i -D @nomicfoundation/hardhat-toolbox @nomicfoundation/hardhat-ethers
+npm i -D @nomicfoundation/hardhat-ethers chai mocha hardhat
 ```
 
 ## Quick start
