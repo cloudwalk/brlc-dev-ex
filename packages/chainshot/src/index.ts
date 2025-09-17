@@ -1,7 +1,7 @@
-import "@nomicfoundation/hardhat-toolbox";
+/* eslint-disable @typescript-eslint/no-namespace */
 
 import type { HardhatRuntimeEnvironment } from "hardhat/types";
-import { beforeEach, afterEach, before, after } from "mocha";
+import { beforeEach, after } from "mocha";
 import { expect, assert, use as chaiUse } from "chai";
 import { Scenario, ScenarioConfig } from "./Scenario.js";
 import { jestSnapshotPlugin } from "mocha-chai-jest-snapshot";
@@ -10,8 +10,10 @@ import { dumpScenariosToHumans } from "./scenarioLogs2Humans.js";
 type FirstFunctionArgument<T> = T extends (arg: infer A) => unknown ? A : never;
 type ChaiPlugin = FirstFunctionArgument<typeof chaiUse>;
 
-const chainShotChaiPlugin = (hre: HardhatRuntimeEnvironment): ChaiPlugin => {
-  // expect.addSnapshotSerializer(CSVSerializer);
+function chainShotChaiPlugin(
+  hre: HardhatRuntimeEnvironment,
+  jestSnapshotPluginConfig?: FirstFunctionArgument<typeof jestSnapshotPlugin>,
+): ChaiPlugin {
   let currentTest: Mocha.Test | undefined;
 
   const scenariosCache = new Map<string, Scenario>();
@@ -58,7 +60,7 @@ const chainShotChaiPlugin = (hre: HardhatRuntimeEnvironment): ChaiPlugin => {
   }
 
   return function (chai) {
-    chaiUse(jestSnapshotPlugin());
+    chaiUse(jestSnapshotPlugin(jestSnapshotPluginConfig));
 
     beforeEach(function (this: Mocha.Context) {
       if (this.currentTest) {
@@ -86,16 +88,6 @@ const chainShotChaiPlugin = (hre: HardhatRuntimeEnvironment): ChaiPlugin => {
   };
 };
 
-const chainShotHardhatPlugin = (hre: HardhatRuntimeEnvironment) => {
-  chaiUse(chainShotChaiPlugin(hre));
-};
-
-export {
-  chainShotChaiPlugin,
-  chainShotHardhatPlugin,
-};
-
-/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   var scenario: (name: string, cb: () => Promise<void>) => void;
   namespace Chai {
@@ -107,3 +99,8 @@ declare global {
     }
   }
 }
+
+export {
+  chainShotChaiPlugin,
+};
+export default chainShotChaiPlugin;
