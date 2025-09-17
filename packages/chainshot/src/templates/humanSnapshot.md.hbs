@@ -1,0 +1,53 @@
+# {{testTitle}}
+
+{{#each scenarios}}
+{{#with this}}
+## {{{name}}}
+
+| Idx | Caller | Contract | Name | Args |
+| --- | ------ | -------- | ---- | ---- |
+{{#each logs}}
+| {{inc @index}} | {{caller}} | {{contract}} | {{methodFragment.name}} | {{stringify-inline args}} |
+{{/each}}
+
+```mermaid
+{{{mermaid this}}}
+```
+
+{{#each logs}}
+<details>
+<summary>Step {{@index}}: {{contract}}.{{methodFragment.name}}</summary>
+
+- **type**: {{type}}
+- **caller**: {{caller}}
+- **args**: `{{{strigifyLogArgumentsVerbose this}}}`
+
+**Events**
+
+{{#if events}}
+| # | Contract | Event | Args |
+| - | -------- | ----- | ---- |
+{{#each events}}
+| {{inc @index}} | {{contract}} | {{name}} | `{{stringify-inline args}}` |
+{{/each}}
+{{else}}
+_No events_
+{{/if}}
+
+**Balances**
+
+{{#each balances}}
+**Token:** {{@key}}
+| Holder | Balance |
+| ------ | ------- |
+{{#each this}}
+| {{@key}} | {{this}} |
+{{/each}}
+
+{{/each}}
+
+</details>
+{{/each}}
+
+{{/with}}
+{{/each}}
