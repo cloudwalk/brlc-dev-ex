@@ -1,10 +1,16 @@
 {
   "name": "@cloudwalk/chainshot",
-  "version": "0.1.0",
+  "version": "0.1.1-0",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc -p tsconfig.json",
+    "build:watch": "tsc -p tsconfig.json --watch",
+    "prepare": "rm -rf dist && npm run build && cp -r src/templates dist/templates"
+  },
   "dependencies": {
     "handlebars": "^4.7.8",
     "mocha-chai-jest-snapshot": "^1.1.7"
@@ -19,8 +25,8 @@
     "typescript": "5.9.2"
   },
   "peerDependencies": {
-    "@nomicfoundation/hardhat-ethers": ">=3.0.0",
-    "hardhat": ">=2",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "hardhat": "^2.0.0",
     "mocha": ">=10",
     "chai": ">=4"
   },
@@ -33,11 +39,6 @@
   "files": [
     "dist/"
   ],
-  "scripts": {
-    "clean": "rm -rf dist",
-    "build": "tsc -p tsconfig.json",
-    "prepare": "rm -rf dist && npm run build && cp -r src/templates dist/templates"
-  },
   "publishConfig": {
     "access": "public"
   }

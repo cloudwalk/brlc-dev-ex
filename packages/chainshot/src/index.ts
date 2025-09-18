@@ -20,6 +20,7 @@ function chainShotChaiPlugin(
   const scenariosToHumanSnapshots: Record<string, Scenario[]> = {};
 
   async function startScenario(this: Chai.ExpectStatic, config: ScenarioConfig): Promise<void> {
+    console.log("startScenario", config);
     if (currentTest === undefined) {
       throw new Error("Scenario have to be runned in a test");
     }
@@ -49,9 +50,7 @@ function chainShotChaiPlugin(
       throw new Error("Scenario have to be started in a test");
     }
     scenario.restoreProvider(hre.ethers.provider);
-    await scenario.processTxs();
-
-    // scenario.printLogs();
+    scenario.printLogs();
     expect(scenario.logs).toMatchSnapshot();
     if (currentTest.file) {
       scenariosToHumanSnapshots[currentTest.file] = [...(scenariosToHumanSnapshots[currentTest.file] || []), scenario];

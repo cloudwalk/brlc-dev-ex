@@ -4,15 +4,19 @@ import { getBigInt } from "ethers";
 import { normalizeAddress, revertMap } from "./utils.js";
 
 type HREProvider = HardhatRuntimeEnvironment["ethers"]["provider"];
-interface TxRecord {
-  txHash: string;
-  methodFragment: FunctionFragment;
-  contract: string;
-  caller: string;
-  args: unknown[];
-}
+
+type Renderable =
+  string |
+  number |
+  boolean |
+  null |
+  undefined |
+  bigint |
+  Renderable[] |
+  { [key: string]: Renderable };
 
 export interface ScenarioConfig {
+  customState?: Record<string, (txReceipt: TransactionReceipt) => Promise<Renderable>>;
   name?: string;
   accounts: Record<string, string>;
   contracts: Record<string, BaseContract>;
@@ -33,6 +37,7 @@ export interface ScenarioLogRecord {
   args: unknown[];
   balances: Record<string, Record<string, bigint>>;
   events: ScenarioEventRecord[];
+  customState?: Record<string, Renderable>;
 }
 
 export type ScenarioLogs = ScenarioLogRecord[] & { [ScenarioLogsSymbol]?: true };
@@ -48,7 +53,6 @@ export class Scenario {
   private addressToToken: Record<string, string>;
   private addressToAccount: Record<string, string>;
   private originalSend: HREProvider["send"];
-  private transactionsQueue: TxRecord[] = [];
   private decimalsCache: Record<string, number> = {};
 
   constructor(
@@ -86,7 +90,7 @@ export class Scenario {
       if (args[0] === "eth_sendTransaction" && args[1] !== undefined && args[1][0] !== undefined) {
         const transaction = args[1][0] as unknown as { from: string; to: string; data: string };
         const txHash = await this.originalSend.call(provider, ...args);
-        this.queueTx(txHash, transaction);
+        await this.processTx(transaction, txHash);
         return txHash;
       }
       return this.originalSend.call(provider, ...args);
@@ -167,27 +171,49 @@ export class Scenario {
     return balances;
   }
 
-  async processTxs() {
-    for (const methodCalled of this.transactionsQueue) {
-      const txReceipt = await this.hre.ethers.provider.getTransactionReceipt(methodCalled.txHash);
-      if (txReceipt === null) {
-        // TODO maybe log it with fail status??
-        console.warn("Transaction receipt is null", methodCalled);
-        continue;
-        // throw new Error("Transaction receipt is null");
-      }
-      this.logs.push({
-        type: "methodCall",
-        methodFragment: methodCalled.methodFragment,
-        args: methodCalled.args,
-        caller: methodCalled.caller,
-        contract: methodCalled.contract,
-        balances: await this.getBalances(txReceipt),
-        events: this.getTxLogs(txReceipt),
-      });
+  async getCustomState(txReceipt: TransactionReceipt) {
+    const { customState } = this.config;
+    if (!customState) {
+      return;
     }
-    this.transactionsQueue = [];
-  };
+    const keys = Object.keys(customState);
+    const values = await Promise.all(keys.map(key => customState[key](txReceipt)));
+    return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
+  }
+
+  async processTx(data: { from: string; to: string; data: string }, txHash: string) {
+    const caller = this.resolveAddress(data.from);
+    const contract = this.resolveAddress(data.to);
+    const contractInstance: BaseContract | undefined = this.config.contracts[contract];
+    const parsedData = contractInstance?.interface.parseTransaction({ data: data.data });
+    const methodFragment = parsedData?.fragment as FunctionFragment;
+    if (!methodFragment) {
+      throw new Error("Failed to parse method fragment");
+    }
+    const args = parsedData?.args;
+    const txReceipt = await this.hre.ethers.provider.getTransactionReceipt(txHash);
+    if (txReceipt === null) {
+      // TODO maybe log it with fail status??
+      console.warn("Transaction receipt is null", txHash);
+      return;
+      // throw new Error("Transaction receipt is null");
+    }
+    const [balances, customState] = await Promise.all([
+      this.getBalances(txReceipt),
+      this.getCustomState(txReceipt),
+    ]);
+
+    this.logs.push({
+      type: "methodCall",
+      methodFragment: methodFragment,
+      args: args ? this.resolveAddressDeep(args) : [],
+      caller: caller,
+      contract: contract,
+      balances,
+      events: this.getTxLogs(txReceipt),
+      customState,
+    });
+  }
 
   resolveAddress(address: string): string {
     const normalizedAddress = normalizeAddress(address);
@@ -210,25 +236,6 @@ export class Scenario {
       ) as T;
     }
     return data;
-  }
-
-  queueTx(txHash: string, data: { from: string; to: string; data: string }) {
-    const caller = this.resolveAddress(data.from);
-    const contract = this.resolveAddress(data.to);
-    const contractInstance: BaseContract | undefined = this.config.contracts[contract];
-    const parsedData = contractInstance?.interface.parseTransaction({ data: data.data });
-    const methodFragment = parsedData?.fragment as FunctionFragment;
-    if (!methodFragment) {
-      throw new Error("Failed to parse method fragment");
-    }
-    const args = parsedData?.args;
-    this.transactionsQueue.push({
-      txHash,
-      methodFragment: methodFragment,
-      contract,
-      caller,
-      args: args ? this.resolveAddressDeep(args) : [],
-    });
   }
 
   printLogs() {
