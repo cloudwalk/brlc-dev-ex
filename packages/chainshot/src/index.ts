@@ -2,7 +2,7 @@
 
 import type { HardhatRuntimeEnvironment } from "hardhat/types";
 import type { RootHookObject } from "mocha";
-import { expect, assert, use as chaiUse } from "chai";
+
 import { Scenario, ScenarioConfig } from "./Scenario.js";
 import { jestSnapshotPlugin } from "mocha-chai-jest-snapshot";
 import { dumpScenariosToHumans } from "./scenarioLogs2Humans.js";
@@ -10,19 +10,21 @@ import { dumpScenariosToHumans } from "./scenarioLogs2Humans.js";
 type FirstFunctionArgument<T> = T extends (arg: infer A) => unknown ? A : never;
 
 export function mochaHooks(options: {
+  chai?: typeof import("chai");
   hre?: HardhatRuntimeEnvironment;
   jestSnapshotPluginConfig?: FirstFunctionArgument<typeof jestSnapshotPlugin>;
 } = {},
 ): RootHookObject {
   let currentTest: Mocha.Test | undefined;
-
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const chai = options.chai || require("chai");
   const scenariosCache = new Map<string, Scenario>();
   const scenariosToHumanSnapshots: Record<string, Scenario[]> = {};
 
   function initPlugin(hre: HardhatRuntimeEnvironment) {
-    chaiUse(jestSnapshotPlugin(options.jestSnapshotPluginConfig));
+    chai.use(jestSnapshotPlugin(options.jestSnapshotPluginConfig));
 
-    expect.startScenario = async function startScenario(config: ScenarioConfig): Promise<void> {
+    chai.expect.startScenario = async function startScenario(config: ScenarioConfig): Promise<void> {
       if (currentTest === undefined) {
         throw new Error("Scenario have to be runned in a test");
       }
@@ -42,7 +44,7 @@ export function mochaHooks(options: {
       scenariosCache.set(currentTest.id, scenario);
       // return scenario;
     };
-    expect.endScenario = async function endScenario(this: Chai.ExpectStatic): Promise<void> {
+    chai.expect.endScenario = async function endScenario(this: Chai.ExpectStatic): Promise<void> {
       if (currentTest === undefined) {
         throw new Error("Scenario have to be completed in a test");
       }
@@ -51,10 +53,9 @@ export function mochaHooks(options: {
         throw new Error("Scenario have to be started in a test");
       }
       scenario.restoreProvider(hre.ethers.provider);
-      await scenario.processTxs();
 
       // scenario.printLogs();
-      expect(scenario.logs).toMatchSnapshot();
+      chai.expect(scenario.logs).toMatchSnapshot();
       if (currentTest.file) {
         if (!scenariosToHumanSnapshots[currentTest.file]) {
           scenariosToHumanSnapshots[currentTest.file] = [];
@@ -68,8 +69,8 @@ export function mochaHooks(options: {
     async function dummy() {
       console.log("Current network is not hardhat, skipping scenario plugin");
     };
-    expect.startScenario = dummy;
-    expect.endScenario = dummy;
+    chai.expect.startScenario = dummy;
+    chai.expect.endScenario = dummy;
   }
   return {
     beforeAll(this: Mocha.Context) {
@@ -78,6 +79,7 @@ export function mochaHooks(options: {
       if (hre.network.name === "hardhat") {
         initPlugin(hre);
       } else {
+        console.log("initDummyPlugin")
         initDummyPlugin();
       }
     },
@@ -88,7 +90,7 @@ export function mochaHooks(options: {
     },
     async afterAll() {
       // checking if all scenarios are ended
-      assert(scenariosCache.size === 0, "There are still running snapshot scenarios");
+      chai.assert(scenariosCache.size === 0, "There are still running snapshot scenarios");
 
       for (const [testFile, scenarios] of Object.entries(scenariosToHumanSnapshots)) {
         await dumpScenariosToHumans(testFile, scenarios);

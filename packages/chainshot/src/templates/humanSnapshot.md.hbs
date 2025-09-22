@@ -46,6 +46,15 @@ _No events_
 
 {{/each}}
 
+{{#if customState}}
+{{#each customState}}
+**{{@key}}**
+```json
+{{{stringify-multiline this}}}
+```
+{{/each}}
+{{/if}}
+
 </details>
 {{/each}}
 

@@ -2,7 +2,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import type { Scenario } from "./Scenario.js";
 import Handlebars from "handlebars";
-import { strigifyLogArgumentsVerbose, stringifyValue } from "./utils.js";
+import { strigifyLogArgumentsVerbose, stringifyInline, stringifyMultiline } from "./utils.js";
 import { renderSequenceDiagram } from "./sequenceDiagram.js";
 
 async function getFileName(testFile: string) {
@@ -12,7 +12,8 @@ async function getFileName(testFile: string) {
   return path.join(snapshotsDir, parsed.name + ".md");
 }
 
-Handlebars.registerHelper("stringify-inline", stringifyValue);
+Handlebars.registerHelper("stringify-inline", stringifyInline);
+Handlebars.registerHelper("stringify-multiline", stringifyMultiline);
 Handlebars.registerHelper("strigifyLogArgumentsVerbose", strigifyLogArgumentsVerbose);
 Handlebars.registerHelper("mermaid", renderSequenceDiagram);
 Handlebars.registerHelper("inc", function (value: string) {

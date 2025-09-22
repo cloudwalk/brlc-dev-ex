@@ -202,8 +202,7 @@ export class Scenario {
       this.getBalances(txReceipt),
       this.getCustomState(txReceipt),
     ]);
-
-    this.logs.push({
+    const log: ScenarioLogRecord = {
       type: "methodCall",
       methodFragment: methodFragment,
       args: args ? this.resolveAddressDeep(args) : [],
@@ -211,8 +210,11 @@ export class Scenario {
       contract: contract,
       balances,
       events: this.getTxLogs(txReceipt),
-      customState,
-    });
+    };
+    if (customState) {
+      log.customState = customState;
+    }
+    this.logs.push(log);
   }
 
   resolveAddress(address: string): string {

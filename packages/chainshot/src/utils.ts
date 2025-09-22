@@ -1,5 +1,6 @@
 import { Addressable } from "ethers";
 import { ScenarioLogRecord } from "./Scenario.js";
+import {format as prettyFormat} from 'pretty-format'
 
 function limitStringLength(str: string, limit: number): string {
   if (str.length <= limit) return str;
@@ -71,3 +72,11 @@ export function stringifyValue(value: unknown): string {
   }
   return stringifyValue(String(value));
 }
+
+export function stringifyInline(value: unknown): string {
+  return stringifyValue(value);
+};
+
+export function stringifyMultiline(value: unknown): string {
+  return prettyFormat(value);
+};
