@@ -15,17 +15,47 @@ npm i -D @nomicfoundation/hardhat-ethers chai mocha hardhat
 
 ## Quick start
 
-Enable the plugin once before your tests run (e.g., in a root hook beforeAll);
+Enable the plugin via Mocha root hooks in your Hardhat config (Hardhat v2):
 
 ```ts
-import { use } from "chai";
-import hre from "hardhat";
-import { chainShotChaiPlugin } from "@cloudwalk/chainshot";
+// hardhat.config.ts
+import type { HardhatUserConfig } from "hardhat/config";
+import { mochaHooks } from "@cloudwalk/chainshot";
 
-beforeAll(() => {
-  use(chainShotChaiPlugin(hre));
+const config: HardhatUserConfig = {
+  mocha: {
+    // Initializes Chainshot and registers helpers on Chai's expect
+    rootHooks: mochaHooks(),
+  },
+};
+
+export default config;
+```
+
+Optionally, you can pass a custom Hardhat runtime or configure the Jest-style snapshot plugin that Chainshot uses under the hood:
+
+```ts
+mochaHooks({
+  // Provide a specific HRE if you need to customize it; otherwise it is auto-required
+  // hre,
+  // Configure mocha-chai-jest-snapshot (Jest-style snapshots placed next to tests)
+  jestSnapshotPluginConfig: {
+    // Any relevant Jest project config options
+  },
 });
 ```
+
+Alternatively, use a Mocha hook file with Hardhat by adding this to `.mocharc.json`:
+
+```json
+{
+  "require": ["hardhat/register", "@cloudwalk/chainshot/hook"],
+  "timeout": 40000,
+  "_": ["test/**/*.ts"]
+}
+```
+
+Note: import the Chainshot hook after `hardhat/register` so the Hardhat Runtime Environment is available.
 
 Write a scenario in a test by starting and ending it around the code that sends transactions:
 
@@ -44,7 +74,7 @@ it("transfers tokens", async () => {
       Vault: vault,
     },
     tokens: {
-      Token: token, // ERC20-like: decimals(), balanceOf(address)
+      Token: token,
     },
   });
 
@@ -69,6 +99,9 @@ For each transaction submitted after `startScenario` and before `endScenario`:
 - **Method call**: contract, function name, and decoded arguments
 - **Caller**: resolved to your friendly name (e.g., `Alice`)
 - **Events**: all emitted events decoded per contract interfaces
+  (excluding ERC20 `Transfer` from contracts listed in `tokens`; those
+  are rendered as transfer arrows in the Mermaid diagram rather than as
+  regular events)
 - **Balances**: for every token in `tokens`, a balance table for all `accounts` and `contracts`
 
 These records are aggregated into `scenario.logs` and compared against a snapshot for regression testing.
@@ -85,13 +118,13 @@ Most editors (and GitHub) can render Mermaid diagrams directly. If not, copy the
 ## API
 
 ```ts
-function chainShotChaiPlugin(
-  hre: HardhatRuntimeEnvironment,
-  jestSnapshotPluginConfig?: Partial<import("@jest/types").Config.ProjectConfig>,
-): ChaiPlugin;
+function mochaHooks(options?: {
+  hre?: HardhatRuntimeEnvironment;
+  jestSnapshotPluginConfig?: Partial<import("@jest/types").Config.ProjectConfig>;
+}): import("mocha").RootHookObject;
 ```
 
-Registers two async helpers on Chai’s `expect`:
+When initialized, the plugin registers two async helpers on Chai’s `expect`:
 
 ```ts
 await expect.startScenario(config: ScenarioConfig)
@@ -111,7 +144,7 @@ interface ScenarioConfig {
 
 Notes:
 
-- Tokens are used both to render transfer arrows in the diagram (listening for `Transfer` events) and to compute per-step balances.
+- Token contracts are configured separately from other `contracts` because their ERC20 `Transfer` events are treated specially: they are converted into token-movement arrows in the Mermaid diagram and are not shown as regular events. Tokens are also used to compute per-step balances.
 - Provide every address that may receive or send tokens in `accounts` and `contracts` so balances include them.
 
 ## Important details
