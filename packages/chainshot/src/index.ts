@@ -24,7 +24,7 @@ export function mochaHooks(options: {
   function initPlugin(hre: HardhatRuntimeEnvironment) {
     chai.use(jestSnapshotPlugin(options.jestSnapshotPluginConfig));
 
-    chai.expect.startScenario = async function startScenario(config: ScenarioConfig): Promise<void> {
+    chai.expect.startChainshot = async function startChainshot(config: ScenarioConfig): Promise<void> {
       if (currentTest === undefined) {
         throw new Error("Scenario have to be runned in a test");
       }
@@ -44,7 +44,7 @@ export function mochaHooks(options: {
       scenariosCache.set(currentTest.id, scenario);
       // return scenario;
     };
-    chai.expect.endScenario = async function endScenario(this: Chai.ExpectStatic): Promise<void> {
+    chai.expect.stopChainshot = async function stopChainshot(this: Chai.ExpectStatic): Promise<void> {
       if (currentTest === undefined) {
         throw new Error("Scenario have to be completed in a test");
       }
@@ -69,8 +69,8 @@ export function mochaHooks(options: {
     async function dummy() {
       console.log("Current network is not hardhat, skipping scenario plugin");
     };
-    chai.expect.startScenario = dummy;
-    chai.expect.endScenario = dummy;
+    chai.expect.startChainshot = dummy;
+    chai.expect.stopChainshot = dummy;
   }
   return {
     beforeAll(this: Mocha.Context) {
@@ -79,7 +79,7 @@ export function mochaHooks(options: {
       if (hre.network.name === "hardhat") {
         initPlugin(hre);
       } else {
-        console.log("initDummyPlugin")
+        console.log("initDummyPlugin");
         initDummyPlugin();
       }
     },
@@ -103,10 +103,10 @@ declare global {
   var scenario: (name: string, cb: () => Promise<void>) => void;
   namespace Chai {
     interface ExpectStatic {
-      startScenario(
+      startChainshot(
         config: ScenarioConfig,
       ): Promise<void>;
-      endScenario(): Promise<void>;
+      stopChainshot(): Promise<void>;
     }
   }
 }

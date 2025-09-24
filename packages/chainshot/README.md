@@ -63,7 +63,7 @@ Write a scenario in a test by starting and ending it around the code that sends 
 import { expect } from "chai";
 
 it("transfers tokens", async () => {
-  await expect.startScenario({
+  await expect.startChainshot({
     name: "Happy path: transfer",
     accounts: {
       Alice: alice.address,
@@ -81,11 +81,11 @@ it("transfers tokens", async () => {
   await token.connect(alice).transfer(bob.address, 100n);
   await vault.connect(bob).deposit(50n);
 
-  await expect.endScenario();
+  await expect.stopChainshot();
 });
 ```
 
-That’s it. On `endScenario()` the plugin will:
+That’s it. On `stopChainshot()` the plugin will:
 
 - Restore the provider
 - Process captured transactions
@@ -94,7 +94,7 @@ That’s it. On `endScenario()` the plugin will:
 
 ## What gets captured
 
-For each transaction submitted after `startScenario` and before `endScenario`:
+For each transaction submitted after `startChainshot` and before `stopChainshot`:
 
 - **Method call**: contract, function name, and decoded arguments
 - **Caller**: resolved to your friendly name (e.g., `Alice`)
@@ -127,8 +127,8 @@ function mochaHooks(options?: {
 When initialized, the plugin registers two async helpers on Chai’s `expect`:
 
 ```ts
-await expect.startScenario(config: ScenarioConfig)
-await expect.endScenario()
+await expect.startChainshot(config: ScenarioConfig)
+await expect.stopChainshot()
 ```
 
 ### ScenarioConfig
@@ -150,7 +150,7 @@ Notes:
 ## Important details
 
 - **Hardhat-only behavior**: When `hre.network.name !== "hardhat"`, the helpers are installed as no-ops. On `hardhat`, they capture provider traffic by wrapping `provider.send`.
-- **One scenario per test**: Each Mocha test should start and end at most one scenario. Missing `endScenario()` will fail the test with an assertion.
+- **One scenario per test**: Each Mocha test should start and end at most one scenario. Missing `stopChainshot()` will fail the test with an assertion.
 - **Snapshots**: Uses `mocha-chai-jest-snapshot` under the hood so Jest-style snapshots are written next to your tests. You can configure it via the optional parameter shown above.
 - **TypeScript**: Types are published; import from `@cloudwalk/chainshot`.
 
@@ -158,7 +158,7 @@ Notes:
 
 - Test fails with: `There are still running snapshot scenarios`
 
-  - Ensure every `startScenario` is paired with `endScenario` inside the same test.
+  - Ensure every `startChainshot` is paired with `stopChainshot` inside the same test.
 
 - No arrows for token movements in the diagram
 
