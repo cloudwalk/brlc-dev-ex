@@ -1,7 +1,7 @@
 import { type HardhatRuntimeEnvironment } from "hardhat/types";
-import type { BaseContract, Log, TransactionReceipt, FunctionFragment } from "ethers";
+import type { BaseContract, Log, TransactionReceipt, FunctionFragment, AddressLike } from "ethers";
 import { getBigInt } from "ethers";
-import { normalizeAddress, revertMap } from "./utils.js";
+import { normalizeAddressAsync, revertMap } from "./utils.js";
 
 type HREProvider = HardhatRuntimeEnvironment["ethers"]["provider"];
 
@@ -18,7 +18,7 @@ type Renderable =
 export interface ScenarioConfig {
   customState?: Record<string, (txReceipt: TransactionReceipt) => Promise<Renderable>>;
   name?: string;
-  accounts: Record<string, string>;
+  accounts: Record<string, AddressLike>;
   contracts: Record<string, BaseContract>;
   tokens: Record<string, BaseContract>;
 }
@@ -49,11 +49,12 @@ export class Scenario {
   public config: ScenarioConfig;
   public logs: ScenarioLogs = [] as ScenarioLogs;
 
-  private addressToContract: Record<string, string>;
-  private addressToToken: Record<string, string>;
-  private addressToAccount: Record<string, string>;
+  private addressToContract: Record<string, string> = {};
+  private addressToToken: Record<string, string> = {};
+  private addressToAccount: Record<string, string> = {};
   private originalSend: HREProvider["send"];
   private decimalsCache: Record<string, number> = {};
+  private initializedPromise: Promise<void> | undefined;
 
   constructor(
     private hre: HardhatRuntimeEnvironment,
@@ -66,12 +67,27 @@ export class Scenario {
     this.originalSend = this.hre.ethers.provider.send.bind(this.hre.ethers.provider);
     this.config = options.config;
     this.test = options.test;
-    this.addressToContract = revertMap(this.config.contracts, contract => normalizeAddress(contract.target));
-    this.addressToToken = revertMap(this.config.tokens, contract => normalizeAddress(contract.target));
-    this.addressToAccount = revertMap(this.config.accounts, normalizeAddress);
     this.config = options.config;
     this.logs[ScenarioLogsSymbol] = true;
     this.name = options.name || this.generateNameFromTest(this.test);
+    this.waitForInitialization();
+  }
+
+  private async init() {
+    if (this.initializedPromise) {
+      return this.initializedPromise;
+    }
+    this.addressToContract = await revertMap(this.config.contracts, normalizeAddressAsync);
+    this.addressToToken = await revertMap(this.config.tokens, normalizeAddressAsync);
+    this.addressToAccount = await revertMap(this.config.accounts, normalizeAddressAsync);
+  }
+
+  public async waitForInitialization() {
+    if (this.initializedPromise) {
+      return this.initializedPromise;
+    }
+    this.initializedPromise = this.init();
+    return this.initializedPromise;
   }
 
   private generateNameFromTest(currentTest: Mocha.Test) {
@@ -105,13 +121,13 @@ export class Scenario {
     return { ...this.config.contracts, ...this.config.tokens };
   }
 
-  private getAllBalanceHolders(): Record<string, string> {
+  private async getAllBalanceHolders(): Promise<Record<string, string>> {
     const balanceHolders: Record<string, string> = {};
     for (const [name, contract] of Object.entries(this.getAllContracts())) {
-      balanceHolders[name] = normalizeAddress(contract.target as string);
+      balanceHolders[name] = contract.target.toString().toLowerCase();
     }
     for (const [name, account] of Object.entries(this.config.accounts)) {
-      balanceHolders[name] = normalizeAddress(account);
+      balanceHolders[name] = await normalizeAddressAsync(account);
     }
     return balanceHolders;
   }
@@ -161,7 +177,7 @@ export class Scenario {
         }));
       };
 
-      for (const [accountName, accountAddress] of Object.entries(this.getAllBalanceHolders())) {
+      for (const [accountName, accountAddress] of Object.entries(await this.getAllBalanceHolders())) {
         const balance = await getBalanceForToken(accountAddress);
         tokenBalances[accountName] = balance;
       }
@@ -218,7 +234,7 @@ export class Scenario {
   }
 
   resolveAddress(address: string): string {
-    const normalizedAddress = normalizeAddress(address);
+    const normalizedAddress = address.toLowerCase();
     return this.addressToAccount[normalizedAddress] ||
       this.addressToContract[normalizedAddress] ||
       this.addressToToken[normalizedAddress] ||

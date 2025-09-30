@@ -38,9 +38,8 @@ export function mochaHooks(options: {
           config,
           name: config.name,
         });
-
+      await scenario.waitForInitialization();
       scenario.injectIntoProvider(hre.ethers.provider);
-
       scenariosCache.set(currentTest.id, scenario);
       // return scenario;
     };

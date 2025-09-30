@@ -1,6 +1,6 @@
-import { Addressable } from "ethers";
+import { AddressLike, getAddress, resolveAddress } from "ethers";
 import { ScenarioLogRecord } from "./Scenario.js";
-import {format as prettyFormat} from 'pretty-format'
+import { format as prettyFormat } from "pretty-format";
 
 function limitStringLength(str: string, limit: number): string {
   if (str.length <= limit) return str;
@@ -8,12 +8,25 @@ function limitStringLength(str: string, limit: number): string {
   return str.slice(0, halfLimit) + ".." + str.slice(-halfLimit);
 }
 
-export function revertMap<K extends string, R>(map: Record<K, R>, mapper: (value: R) => string): Record<string, K> {
-  return Object.fromEntries(Object.entries(map).map(([key, value]) => [mapper(value as R), key])) as Record<string, K>;
+export async function revertMap<K extends string, R>(
+  map: Record<K, R>,
+  mapper: (value: R) => string | Promise<string>,
+): Promise<Record<string, K>> {
+  return Promise.all(
+    Object.entries<R>(map)
+      .map(async ([key, value]) => [await mapper(value), key]),
+  )
+    .then(Object.fromEntries);
 }
 
-export function normalizeAddress(address: string | Addressable): string {
-  return address.toString().toLowerCase();
+export async function normalizeAddressAsync(address: AddressLike): Promise<string> {
+  return normalizeAddress(
+    await resolveAddress(address),
+  );
+}
+
+export function normalizeAddress(address: string): string {
+  return getAddress(address).toLowerCase();
 }
 
 export function onlyOneRunning(fn: () => Promise<void>): () => Promise<void> {
