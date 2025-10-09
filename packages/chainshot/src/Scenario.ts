@@ -200,7 +200,7 @@ export class Scenario {
   async processTx(data: { from: string; to: string; data: string }, txHash: string) {
     const caller = this.resolveAddress(data.from);
     const contract = this.resolveAddress(data.to);
-    const contractInstance: BaseContract | undefined = this.config.contracts[contract];
+    const contractInstance: BaseContract | undefined = this.config.contracts[contract] || this.config.tokens[contract];
     const parsedData = contractInstance?.interface.parseTransaction({ data: data.data });
     const methodFragment = parsedData?.fragment as FunctionFragment;
     if (!methodFragment) {
