@@ -1,7 +1,7 @@
 import { type HardhatRuntimeEnvironment } from "hardhat/types";
 import type { BaseContract, Log, TransactionReceipt, FunctionFragment, AddressLike } from "ethers";
 import { getBigInt } from "ethers";
-import { normalizeAddressAsync, revertMap } from "./utils.js";
+import { normalizeAddress, normalizeAddressAsync, revertMap } from "./utils.js";
 
 type HREProvider = HardhatRuntimeEnvironment["ethers"]["provider"];
 
@@ -133,15 +133,20 @@ export class Scenario {
   }
 
   tryParseContractEvent(log: Log): ScenarioEventRecord | undefined {
-    for (const [name, contractContract] of Object.entries(this.getAllContracts())) {
-      const contractEvent = contractContract.interface.parseLog(log);
-      if (contractEvent) {
-        return {
-          name: contractEvent.name,
-          args: this.resolveAddressDeep(contractEvent.args),
-          contract: name,
-        };
-      }
+    const contractAddress = normalizeAddress(log.address);
+    const contractName = this.addressToContract[contractAddress] || this.addressToToken[contractAddress];
+    const contractInstance = this.config.contracts[contractName] || this.config.tokens[contractName];
+
+    if (!contractInstance) {
+      return;
+    }
+    const contractEvent = contractInstance.interface.parseLog(log);
+    if (contractEvent) {
+      return {
+        name: contractEvent.name,
+        args: this.resolveAddressDeep(contractEvent.args),
+        contract: contractName,
+      };
     }
   }
 
