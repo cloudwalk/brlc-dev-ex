@@ -12,23 +12,25 @@
     "prepare": "rm -rf dist && npm run build"
   },
   "dependencies": {
+    "ethers": "^6.15.0",
     "handlebars": "^4.7.8",
-    "mocha-chai-jest-snapshot": "^1.1.7"
+    "mocha-chai-jest-snapshot": "^1.1.7",
+    "pretty-format": "^30.2.0"
   },
   "devDependencies": {
     "@cloudwalk/eslint-config-smart-contracts": "^1.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
-    "hardhat": "^2.0.0",
-    "@types/mocha": "^10.0.0",
     "@types/chai": "^4.0.0",
+    "@types/mocha": "^10.0.0",
     "@types/node": "^22.0.0",
+    "hardhat": "^2.0.0",
     "typescript": "5.9.2"
   },
   "peerDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "chai": ">=4",
     "hardhat": "^2.0.0",
-    "mocha": ">=10",
-    "chai": ">=4"
+    "mocha": ">=10"
   },
   "exports": {
     ".": {
@@ -45,5 +47,6 @@
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b"
 }
