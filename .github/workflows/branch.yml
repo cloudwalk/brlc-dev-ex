@@ -1,4 +1,4 @@
-name: branch
+name: Build and test smart contracts
 
 on:
   workflow_call:
@@ -9,16 +9,8 @@ on:
         required: true
 jobs:
   build:
-    strategy:
-      matrix:
-        os: 
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-        node-version: [lts/*]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }}
+    runs-on: cloudwalk-k8s-runner
+    name: Check code style and run tests
 
     steps:
       - name: Set git to use LF
@@ -26,12 +18,12 @@ jobs:
           git config --global core.autocrlf false
           git config --global core.eol lf
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: .tool-versions
           cache: npm
           registry-url: "https://npm.pkg.github.com"
           scope: "@cloudwalk"
@@ -52,7 +44,6 @@ jobs:
       - run: npm run test
 
       - name: run coverage action
-        if: runner.os == 'Linux'
         uses: cloudwalk/brlc-dev-ex/.github/actions/coverage@main
         with:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

@@ -1,4 +1,4 @@
-name: "coverage-to-codecov"
+name: Submit coverage to Codecov
 description: "Run tests, collect coverage, upload to Codecov"
 inputs:
   CODECOV_TOKEN:
