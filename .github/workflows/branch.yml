@@ -9,8 +9,14 @@ on:
         required: true
 jobs:
   build:
-    runs-on: cloudwalk-k8s-runner
-    name: Check code style and run tests
+    strategy:
+      matrix:
+        os: 
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}
 
     steps:
       - name: Set git to use LF
@@ -44,6 +50,7 @@ jobs:
       - run: npm run test
 
       - name: run coverage action
+        if: runner.os == 'Linux'
         uses: cloudwalk/brlc-dev-ex/.github/actions/coverage@main
         with:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
